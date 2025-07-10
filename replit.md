@@ -7,6 +7,7 @@ This is a full-stack cryptocurrency dashboard application built with React, Type
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Project deployment: Optimized for Vercel platform with serverless functions.
 
 ## System Architecture
 
@@ -92,21 +93,32 @@ Preferred communication style: Simple, everyday language.
 - **Database**: PostgreSQL via Neon serverless connection
 - **Hot Reload**: Automatic restart on file changes
 
-### Production Build
+### Production Build (Vercel)
 - **Frontend**: Vite builds optimized static assets to `dist/public`
-- **Backend**: esbuild bundles server code to `dist/index.js`
-- **Database**: Drizzle migrations handle schema changes
-- **Serving**: Express serves both API and static frontend files
+- **Backend**: Serverless functions in `api/` directory
+- **API Structure**: 
+  - `/api/crypto/top25.ts` - Top 25 cryptocurrencies
+  - `/api/crypto/[id].ts` - Individual cryptocurrency data
+  - `/api/crypto/[id]/chart.ts` - Chart data
+  - `/api/market/stats.ts` - Market statistics
+- **CORS**: Configured for cross-origin requests
+- **Caching**: Optimized cache headers for performance
 
 ### Environment Variables
-- `DATABASE_URL`: PostgreSQL connection string
+- `DATABASE_URL`: PostgreSQL connection string (optional)
 - `NODE_ENV`: Environment mode (development/production)
-- `REPL_ID`: Replit-specific configuration
 
 ### Build Commands
 - `npm run dev`: Start development servers
-- `npm run build`: Build for production
-- `npm run start`: Start production server
+- `npm run build`: Build frontend for production
+- `npm run vercel-build`: Vercel-specific build command
 - `npm run db:push`: Push database schema changes
 
-The application is designed to be easily deployable on platforms like Replit, Vercel, or any Node.js hosting service with PostgreSQL support.
+### Vercel Configuration
+- `vercel.json`: Routes and function configuration
+- **Static Assets**: Served from `dist/public`
+- **API Functions**: Node.js 18 runtime
+- **Headers**: CORS configured for all API routes
+- **Caching**: Strategic cache policies for different endpoints
+
+The application is optimized for Vercel deployment with serverless architecture, providing automatic scaling and global CDN distribution.
