@@ -46,7 +46,7 @@ export function CryptoChart({ cryptoId, cryptoName, isPositive }: CryptoChartPro
   const { data: chartData, isLoading, error } = useQuery({
     queryKey: ["/api/crypto", cryptoId, "chart", selectedPeriod],
     queryFn: () => fetchCryptoChart(cryptoId, selectedPeriod),
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 5000, // Real-time updates every 5 seconds
   });
 
   useEffect(() => {
@@ -86,19 +86,29 @@ export function CryptoChart({ cryptoId, cryptoName, isPositive }: CryptoChartPro
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
         plugins: {
           legend: {
             display: false
           },
           tooltip: {
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
             titleColor: 'white',
             bodyColor: 'white',
             borderColor: isPositive ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)',
-            borderWidth: 1,
+            borderWidth: 2,
+            cornerRadius: 8,
+            displayColors: false,
             callbacks: {
               label: (context) => {
-                return `Price: $${context.parsed.y.toLocaleString()}`;
+                return `Price: $${context.parsed.y.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`;
+              },
+              title: (context) => {
+                const date = new Date(context[0].parsed.x);
+                return date.toLocaleString();
               }
             }
           }
@@ -110,22 +120,45 @@ export function CryptoChart({ cryptoId, cryptoName, isPositive }: CryptoChartPro
               unit: selectedPeriod === "1" ? 'hour' : 'day',
             },
             grid: {
-              color: 'rgba(255, 255, 255, 0.1)'
+              color: 'rgba(255, 255, 255, 0.05)',
+              drawBorder: false,
             },
             ticks: {
-              color: 'rgba(255, 255, 255, 0.7)'
+              color: 'rgba(255, 255, 255, 0.6)',
+              maxTicksLimit: 8
+            },
+            border: {
+              display: false
             }
           },
           y: {
+            position: 'right',
             grid: {
-              color: 'rgba(255, 255, 255, 0.1)'
+              color: 'rgba(255, 255, 255, 0.05)',
+              drawBorder: false,
             },
             ticks: {
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: 'rgba(255, 255, 255, 0.6)',
               callback: function(value) {
-                return '$' + (value as number).toLocaleString();
-              }
+                const num = value as number;
+                if (num >= 1000) {
+                  return '$' + (num / 1000).toFixed(1) + 'K';
+                } else if (num >= 1) {
+                  return '$' + num.toLocaleString(undefined, { maximumFractionDigits: 2 });
+                } else {
+                  return '$' + num.toFixed(6);
+                }
+              },
+              maxTicksLimit: 8
+            },
+            border: {
+              display: false
             }
+          }
+        },
+        elements: {
+          point: {
+            hoverRadius: 8
           }
         }
       }
@@ -187,17 +220,21 @@ export function CryptoChart({ cryptoId, cryptoName, isPositive }: CryptoChartPro
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-full bg-black/20 border-border/50">
+      <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle>Price Chart</CardTitle>
-          <div className="flex space-x-2">
+          <div>
+            <CardTitle className="text-lg">{cryptoName} Price Chart</CardTitle>
+            <p className="text-sm text-muted-foreground">Real-time price movements</p>
+          </div>
+          <div className="flex space-x-1">
             {periods.map((period) => (
               <Button
                 key={period.value}
-                variant={selectedPeriod === period.value ? "default" : "outline"}
+                variant={selectedPeriod === period.value ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setSelectedPeriod(period.value)}
+                className="h-8 px-3"
               >
                 {period.label}
               </Button>
@@ -205,8 +242,8 @@ export function CryptoChart({ cryptoId, cryptoName, isPositive }: CryptoChartPro
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="chart-container">
+      <CardContent className="h-[calc(100%-80px)] p-4">
+        <div className="chart-container h-full w-full">
           <canvas ref={chartRef} />
         </div>
       </CardContent>
