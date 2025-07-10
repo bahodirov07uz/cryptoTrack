@@ -70,17 +70,17 @@ export function CryptoChart({ cryptoId, cryptoName, isPositive }: CryptoChartPro
         datasets: [{
           label: `${cryptoName} Price`,
           data: prices,
-          borderColor: isPositive ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)',
-          backgroundColor: isPositive ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-          borderWidth: 3,
-          fill: true,
-          tension: 0.4,
+          borderColor: isPositive ? '#00ff88' : '#ff4444',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          fill: false,
+          tension: 0,
           pointRadius: 0,
-          pointHoverRadius: 8,
-          pointBackgroundColor: isPositive ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)',
+          pointHoverRadius: 6,
+          pointBackgroundColor: isPositive ? '#00ff88' : '#ff4444',
           pointBorderColor: '#ffffff',
-          pointBorderWidth: 2,
-          pointHoverBorderWidth: 3,
+          pointBorderWidth: 1,
+          pointHoverBorderWidth: 2,
         }]
       },
       options: {
@@ -120,12 +120,17 @@ export function CryptoChart({ cryptoId, cryptoName, isPositive }: CryptoChartPro
               unit: selectedPeriod === "1" ? 'hour' : 'day',
             },
             grid: {
-              color: 'rgba(255, 255, 255, 0.05)',
+              color: 'rgba(255, 255, 255, 0.08)',
               drawBorder: false,
+              lineWidth: 1,
             },
             ticks: {
-              color: 'rgba(255, 255, 255, 0.6)',
-              maxTicksLimit: 8
+              color: 'rgba(255, 255, 255, 0.5)',
+              maxTicksLimit: 6,
+              font: {
+                size: 11,
+                family: 'monospace'
+              }
             },
             border: {
               display: false
@@ -134,14 +139,17 @@ export function CryptoChart({ cryptoId, cryptoName, isPositive }: CryptoChartPro
           y: {
             position: 'right',
             grid: {
-              color: 'rgba(255, 255, 255, 0.05)',
+              color: 'rgba(255, 255, 255, 0.08)',
               drawBorder: false,
+              lineWidth: 1,
             },
             ticks: {
-              color: 'rgba(255, 255, 255, 0.6)',
+              color: 'rgba(255, 255, 255, 0.5)',
               callback: function(value) {
                 const num = value as number;
-                if (num >= 1000) {
+                if (num >= 1000000) {
+                  return '$' + (num / 1000000).toFixed(2) + 'M';
+                } else if (num >= 1000) {
                   return '$' + (num / 1000).toFixed(1) + 'K';
                 } else if (num >= 1) {
                   return '$' + num.toLocaleString(undefined, { maximumFractionDigits: 2 });
@@ -149,7 +157,11 @@ export function CryptoChart({ cryptoId, cryptoName, isPositive }: CryptoChartPro
                   return '$' + num.toFixed(6);
                 }
               },
-              maxTicksLimit: 8
+              maxTicksLimit: 8,
+              font: {
+                size: 11,
+                family: 'monospace'
+              }
             },
             border: {
               display: false
@@ -181,72 +193,48 @@ export function CryptoChart({ cryptoId, cryptoName, isPositive }: CryptoChartPro
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Price Chart</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-between items-center mb-4">
-            <Skeleton className="h-6 w-24" />
-            <div className="flex space-x-2">
-              {periods.map((period) => (
-                <Skeleton key={period.value} className="h-8 w-12" />
-              ))}
-            </div>
-          </div>
-          <Skeleton className="h-[400px] w-full" />
-        </CardContent>
-      </Card>
+      <div className="h-full w-full bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-pulse text-white/20 mb-4">Loading chart...</div>
+          <div className="w-16 h-16 border-4 border-white/10 border-t-white/30 rounded-full animate-spin"></div>
+        </div>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Price Chart</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center text-muted-foreground py-8">
-            <div className="flex flex-col items-center space-y-2">
-              <div className="text-lg">📊</div>
-              <div>Chart data temporarily unavailable</div>
-              <div className="text-sm">Showing fallback data visualization</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="h-full w-full bg-black flex items-center justify-center">
+        <div className="text-center text-white/50">
+          <div className="text-6xl mb-4">⚠</div>
+          <div>Chart data temporarily unavailable</div>
+          <div className="text-sm opacity-50 mt-2">Retrying automatically...</div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="h-full bg-black/20 border-border/50">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg">{cryptoName} Price Chart</CardTitle>
-            <p className="text-sm text-muted-foreground">Real-time price movements</p>
-          </div>
-          <div className="flex space-x-1">
-            {periods.map((period) => (
-              <Button
-                key={period.value}
-                variant={selectedPeriod === period.value ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setSelectedPeriod(period.value)}
-                className="h-8 px-3"
-              >
-                {period.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="h-[calc(100%-80px)] p-4">
-        <div className="chart-container h-full w-full">
-          <canvas ref={chartRef} />
-        </div>
-      </CardContent>
-    </Card>
+    <div className="h-full w-full bg-black relative">
+      {/* Time Period Controls - Top Right */}
+      <div className="absolute top-4 right-4 z-20 flex space-x-1">
+        {periods.map((period) => (
+          <Button
+            key={period.value}
+            variant={selectedPeriod === period.value ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setSelectedPeriod(period.value)}
+            className="h-8 px-3 bg-black/50 text-white/70 hover:text-white border-white/20"
+          >
+            {period.label}
+          </Button>
+        ))}
+      </div>
+
+      {/* Full Screen Chart */}
+      <div className="h-full w-full">
+        <canvas ref={chartRef} className="w-full h-full" />
+      </div>
+    </div>
   );
 }
