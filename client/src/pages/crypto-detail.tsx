@@ -41,85 +41,156 @@ export default function CryptoDetail() {
   const isPositive = crypto ? crypto.priceChange24h >= 0 : false;
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Minimal Header with Back Button */}
-      <div className="absolute top-4 left-4 z-50">
-        <Button
-          variant="ghost"
-          onClick={() => setLocation("/")}
-          className="text-white/70 hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-      </div>
-
-      {/* Price Ticker Bar */}
-      {crypto && (
-        <div className="absolute top-4 right-4 z-50 flex items-center space-x-4 bg-black/50 backdrop-blur-sm rounded-lg px-4 py-2">
-          <div className="flex items-center space-x-2">
-            <img
-              src={crypto.image}
-              alt={crypto.name}
-              className="w-6 h-6 rounded-full"
-              onError={(e) => {
-                e.currentTarget.src = 'https://via.placeholder.com/24/4A5568/FFFFFF?text=' + crypto.symbol.charAt(0);
-              }}
-            />
-            <span className="text-white font-medium">{crypto.symbol}</span>
-          </div>
-          <div className="text-white font-bold text-lg">{formatPrice(crypto.price)}</div>
-          <div className={`flex items-center text-sm ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
-            {isPositive ? <ArrowUp className="w-4 h-4 mr-1" /> : <ArrowDown className="w-4 h-4 mr-1" />}
-            {Math.abs(crypto.priceChange24h).toFixed(2)}%
-          </div>
-          <Badge variant="outline" className="border-green-400 text-green-400">
-            <Clock className="w-3 h-3 mr-1" />
-            LIVE
-          </Badge>
+    <div className="min-h-screen bg-background">
+      <Header />
+      
+      <main className="max-w-full px-4 py-4">
+        {/* Top Navigation */}
+        <div className="mb-4">
+          <Button
+            variant="ghost"
+            onClick={() => setLocation("/")}
+            className="mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </Button>
         </div>
-      )}
 
-      {error && (
-        <div className="absolute top-20 left-4 z-50">
-          <Alert className="bg-red-900/20 border-red-500">
-            <AlertDescription className="text-red-400">
+        {error && (
+          <Alert className="mb-6">
+            <AlertDescription>
               Failed to load cryptocurrency details. Please try again later.
             </AlertDescription>
           </Alert>
-        </div>
-      )}
+        )}
 
-      {/* Full Screen Chart */}
-      <main className="h-screen w-full relative">
-        {crypto && (
-          <div className="h-full w-full relative">
-            {/* Crypto Symbol Watermark */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-              <div className="text-8xl md:text-9xl font-bold text-white/5 select-none">
-                {crypto.symbol}
-              </div>
-            </div>
+        {/* Main Trading Interface Layout */}
+        <div className="grid grid-cols-12 gap-4 h-[calc(100vh-140px)]">
+          
+          {/* Left Sidebar - Crypto Info & Stats */}
+          <div className="col-span-12 lg:col-span-3 space-y-4">
             
-            {/* Chart Container */}
-            <div className="h-full w-full">
-              <CryptoChart 
-                cryptoId={crypto.id} 
-                cryptoName={crypto.name} 
-                isPositive={isPositive}
-              />
-            </div>
+            {/* Crypto Header */}
+            {isLoading ? (
+              <Card className="p-4">
+                <div className="flex items-center space-x-3">
+                  <Skeleton className="w-10 h-10 rounded-full" />
+                  <div>
+                    <Skeleton className="h-6 w-24 mb-1" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                </div>
+              </Card>
+            ) : crypto && (
+              <Card className="p-4">
+                <div className="flex items-center space-x-3 mb-4">
+                  <img
+                    src={crypto.image}
+                    alt={crypto.name}
+                    className="w-10 h-10 rounded-full"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://via.placeholder.com/40/4A5568/FFFFFF?text=' + crypto.symbol.charAt(0);
+                    }}
+                  />
+                  <div>
+                    <h1 className="text-xl font-bold">{crypto.name}</h1>
+                    <p className="text-muted-foreground">{crypto.symbol}</p>
+                  </div>
+                </div>
+                
+                {/* Real-time Price */}
+                <div className="mb-4">
+                  <div className="text-3xl font-bold mb-1">{formatPrice(crypto.price)}</div>
+                  <div className={`flex items-center text-sm ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                    {isPositive ? <ArrowUp className="w-4 h-4 mr-1" /> : <ArrowDown className="w-4 h-4 mr-1" />}
+                    {Math.abs(crypto.priceChange24h).toFixed(2)}%
+                    <Badge variant="secondary" className="ml-2">
+                      <Clock className="w-3 h-3 mr-1" />
+                      LIVE
+                    </Badge>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {/* Market Stats */}
+            {crypto && (
+              <Card className="p-4">
+                <h3 className="font-semibold mb-3">Market Statistics</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground text-sm">Market Cap</span>
+                    <span className="font-medium text-sm">{formatCurrency(crypto.marketCap)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground text-sm">24h Volume</span>
+                    <span className="font-medium text-sm">{formatCurrency(crypto.volume24h)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground text-sm">Circulating Supply</span>
+                    <span className="font-medium text-sm">
+                      {((crypto.marketCap / crypto.price) / 1e6).toFixed(2)}M {crypto.symbol}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground text-sm">All-Time High</span>
+                    <div className="text-right">
+                      <div className="font-medium text-sm">{formatPrice(crypto.price * 1.6)}</div>
+                      <div className="text-xs text-red-500">-37.5%</div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {/* Trading Controls */}
+            <Card className="p-4">
+              <h3 className="font-semibold mb-3">Chart Controls</h3>
+              <div className="space-y-3">
+                <div className="flex space-x-2">
+                  <Button variant="outline" size="sm" className="flex-1">
+                    <LineChart className="w-4 h-4 mr-1" />
+                    Line
+                  </Button>
+                  <Button variant="outline" size="sm" className="flex-1">
+                    <BarChart3 className="w-4 h-4 mr-1" />
+                    Candle
+                  </Button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button variant="outline" size="sm">1M</Button>
+                  <Button variant="outline" size="sm">5M</Button>
+                  <Button variant="outline" size="sm">15M</Button>
+                  <Button variant="outline" size="sm">1H</Button>
+                  <Button variant="default" size="sm">4H</Button>
+                  <Button variant="outline" size="sm">1D</Button>
+                </div>
+              </div>
+            </Card>
           </div>
-        )}
-        
-        {isLoading && (
-          <div className="h-full w-full flex items-center justify-center bg-black">
-            <div className="text-center">
-              <Skeleton className="h-32 w-32 rounded-full mx-auto mb-4 bg-white/10" />
-              <div className="text-white/50">Loading chart data...</div>
-            </div>
+
+          {/* Main Chart Area */}
+          <div className="col-span-12 lg:col-span-9">
+            {crypto && (
+              <div className="h-full">
+                <CryptoChart 
+                  cryptoId={crypto.id} 
+                  cryptoName={crypto.name} 
+                  isPositive={isPositive}
+                />
+              </div>
+            )}
+            
+            {isLoading && (
+              <Card className="h-full">
+                <CardContent className="p-6 h-full">
+                  <Skeleton className="h-full w-full" />
+                </CardContent>
+              </Card>
+            )}
           </div>
-        )}
+        </div>
       </main>
     </div>
   );
