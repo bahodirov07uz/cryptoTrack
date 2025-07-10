@@ -19,12 +19,10 @@ export function Header() {
               <h1 className="text-xl font-bold text-foreground">CryptoBoard</h1>
             </Link>
             <div className="hidden md:flex space-x-6">
-              <Link href="/">
-                <a className={`text-sm font-medium transition-colors duration-200 ${
-                  location === "/" ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                }`}>
-                  Dashboard
-                </a>
+              <Link href="/" className={`text-sm font-medium transition-colors duration-200 ${
+                location === "/" ? "text-primary" : "text-muted-foreground hover:text-foreground"
+              }`}>
+                Dashboard
               </Link>
               <a href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200">
                 Markets

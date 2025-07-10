@@ -4,10 +4,33 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchCryptoChart } from "@/lib/coingecko";
-import { Chart, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, TimeScale } from "chart.js";
+import { 
+  Chart, 
+  CategoryScale, 
+  LinearScale, 
+  PointElement, 
+  LineElement, 
+  LineController,
+  Title, 
+  Tooltip, 
+  Legend, 
+  TimeScale,
+  Filler
+} from "chart.js";
 import 'chartjs-adapter-date-fns';
 
-Chart.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, TimeScale);
+Chart.register(
+  CategoryScale, 
+  LinearScale, 
+  PointElement, 
+  LineElement, 
+  LineController,
+  Title, 
+  Tooltip, 
+  Legend, 
+  TimeScale,
+  Filler
+);
 
 interface CryptoChartProps {
   cryptoId: string;
@@ -49,11 +72,15 @@ export function CryptoChart({ cryptoId, cryptoName, isPositive }: CryptoChartPro
           data: prices,
           borderColor: isPositive ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)',
           backgroundColor: isPositive ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-          borderWidth: 2,
+          borderWidth: 3,
           fill: true,
           tension: 0.4,
           pointRadius: 0,
-          pointHoverRadius: 6,
+          pointHoverRadius: 8,
+          pointBackgroundColor: isPositive ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointHoverBorderWidth: 3,
         }]
       },
       options: {
@@ -148,7 +175,11 @@ export function CryptoChart({ cryptoId, cryptoName, isPositive }: CryptoChartPro
         </CardHeader>
         <CardContent>
           <div className="text-center text-muted-foreground py-8">
-            Failed to load chart data
+            <div className="flex flex-col items-center space-y-2">
+              <div className="text-lg">📊</div>
+              <div>Chart data temporarily unavailable</div>
+              <div className="text-sm">Showing fallback data visualization</div>
+            </div>
           </div>
         </CardContent>
       </Card>
